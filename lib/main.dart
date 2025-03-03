@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-
-import 'image_view.dart';
+import 'image_paths.dart';
 import 'routes.dart';
+import 'image_view.dart';
 
 void main() {
   runApp(MyApp());
@@ -11,6 +11,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false, // Esconde a faixa "DEBUG"
       title: 'Image Gallery App',
       theme: ThemeData(primarySwatch: Colors.blue),
       initialRoute: Routes.home,
@@ -22,21 +23,33 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class ImageGallery extends StatelessWidget {
-  final List<String> images = [
-    'assets/images/image1.png',
-    'assets/images/image2.jpg',
-    'assets/images/image3.jpg',
-    'assets/images/image4.jpg',
-    'assets/images/image5.jpg',
-    'assets/images/image6.jpg',
-    'assets/images/image7.jpg',
-  ];
+class ImageGallery extends StatefulWidget {
+  @override
+  _ImageGalleryState createState() => _ImageGalleryState();
+}
+
+class _ImageGalleryState extends State<ImageGallery> {
+  final List<String> images = List.from(imagePaths);
+
+  void _addImage() {
+    setState(() {
+      images.add('assets/images/image4.jpg'); // Adiciona uma nova imagem
+    });
+  }
+
+  void _removeImage(int index) {
+    setState(() {
+      images.removeAt(index);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Image Gallery')),
+      appBar: AppBar(
+        title: Text('Image Gallery'),
+        actions: [IconButton(icon: Icon(Icons.add), onPressed: _addImage)],
+      ),
       body: GridView.builder(
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2, // Número de colunas
@@ -50,6 +63,9 @@ class ImageGallery extends StatelessWidget {
                 Routes.viewImage,
                 arguments: images[index],
               );
+            },
+            onLongPress: () {
+              _removeImage(index);
             },
             child: Card(child: Image.asset(images[index])),
           );
