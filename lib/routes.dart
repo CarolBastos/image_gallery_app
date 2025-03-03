@@ -1,4 +1,4 @@
 class Routes {
   static const String home = '/';
-  static const String viewImage = '/view';
+  static const String imageView = '/view';
 }
