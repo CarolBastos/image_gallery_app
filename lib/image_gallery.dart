@@ -1,10 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-
+import 'dart:io';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'routes.dart';
-
 part './custom_images.dart';
 
 class ImageGallery extends StatefulWidget {
@@ -13,25 +11,29 @@ class ImageGallery extends StatefulWidget {
 }
 
 class _ImageGalleryState extends State<ImageGallery> {
-  final List<File> images = [
-    // 'assets/images/image1.jpg',
-    // 'assets/images/image2.jpg',
-    // 'assets/images/image3.png',
-    // Adicione mais caminhos de imagens
-  ];
-
+  final List<File> images = [];
   final ImagePicker _picker = ImagePicker();
 
-  void _pickImage() async {
+  Future<void> _uploadImage(String filePath) async {
+    File file = File(filePath);
     try {
-      final pickedFile = await _picker.pickImage(source: ImageSource.camera);
-      if (pickedFile != null) {
-        setState(() {
-          images.add(File(pickedFile.path));
-        });
-      }
+      String fileName = file.path.split('/').last;
+
+      await FirebaseStorage.instance.ref('uploads/$fileName').putFile(file);
     } catch (e) {
-      print(e);
+      print('Upload failed: $e');
+    }
+  }
+
+  Future<void> _pickImage() async {
+    final XFile? pickedFile = await _picker.pickImage(
+      source: ImageSource.camera,
+    );
+    if (pickedFile != null) {
+      setState(() {
+        images.add(File(pickedFile.path));
+      });
+      _uploadImage(pickedFile.path);
     }
   }
 
@@ -46,7 +48,7 @@ class _ImageGalleryState extends State<ImageGallery> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Image Gallery'),
-        actions: [IconButton(icon: Icon(Icons.add), onPressed: _pickImage)],
+        actions: [IconButton(icon: Icon(Icons.camera), onPressed: _pickImage)],
       ),
       body: SingleChildScrollView(
         child: Column(children: [_CustomImages(images: images)]),
